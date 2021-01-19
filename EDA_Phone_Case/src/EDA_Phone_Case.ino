@@ -7,8 +7,6 @@
 
 #define AD0_VAL 0  // The value of the last bit of the I2C address. 
 
-//test
-
 /*  PIN ASSIGNMENTS */
 #define slp 8
 #define eda1_out 5
@@ -55,7 +53,7 @@ void setup() {
   Wire.begin();
   Wire.setClock(400000);  //The IMU is capped at the 400khz level
   
-  initializeIMU();
+  initializeIMU();  // ***This will become blocking when we add the Rev3 sleep code ***
 
   pinMode(TC1,INPUT);  //Local temp compensation PTC resistors from the thermopile assemblies
   pinMode(TC2,INPUT);
@@ -97,6 +95,7 @@ void loop() {
     edaTurnCounter = 2;
   }
   
+  //  Can get 20ms resolution instead of 30ms by dropping the EDA2 circuit...evaluate its usefulness in Rev3
   else if((edaTurnCounter == 2) && ((millis()-edaReadTimer) >= 15)){
     edaReadTimer = millis();
     eda2 = ads_eda.readADC_SingleEnded(2);
@@ -123,12 +122,12 @@ void loop() {
   PulseSensorAmped.process();
 
 
-  //The ADS1115 can read at 860 SPS, roughly every 1100 us
-  if((micros() - otherReadTimer) > 1500){
+  //The ADS1115 can read at 860 SPS, roughly every 1160 us
+  if((micros() - otherReadTimer) > 1500){  //This is probably superfluous given our current loop time of ~5-10 ms
     otherReadTimer = micros();
     switch (readTurnCounter){ //Take turns reading from each line
       case 1:
-        tp1 = ads_other.readADC_SingleEnded(0);
+        tp1 = ads_other.readADC_SingleEnded(0);  //Thermopile #1
         avg_tp1 = avg_tp1 + tp1;
         if(tp1 > max_tp1){
           max_tp1 = tp1;
@@ -137,7 +136,7 @@ void loop() {
         readTurnCounter = 2;
         break;
       case 2:
-        tp2 = ads_other.readADC_SingleEnded(1);
+        tp2 = ads_other.readADC_SingleEnded(1);  //Thermopile #2
         avg_tp2 = avg_tp2 + tp2;
         if(tp2 > max_tp2){
           max_tp2 = tp2;
