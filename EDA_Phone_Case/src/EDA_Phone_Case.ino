@@ -31,7 +31,8 @@ int fsrReadCounter = 0;
 uint8_t ibiBufferCounter = 0;
 int avg_tc1, avg_tc2, avg_tp1, avg_tp2, avg_fsr, avg_accx, avg_accy, avg_accz, avg_gyrx, avg_gyry, avg_gyrz, avg_brdtemp; //Summary report values (avg)
 int max_tc1, max_tc2, max_tp1, max_tp2, max_fsr, max_accx, max_accy, max_accz, max_gyrx, max_gyry, max_gyrz, max_brdtemp; //Summary report values (max)
-int pulse, hrv; //variables for heart rate and HRV
+int pulse;
+float hrv;
 unsigned int ibi_buffer[IBI_BUFFER_SIZE];
 unsigned long loopTimer, edaReadTimer, reportTimer, otherReadTimer;
 String eda1Report = "";
@@ -259,14 +260,53 @@ void computeSummaryReport(){
   float voltage = analogRead(BATT) * 0.0011224;
   float batt_perc = ((voltage - 3.0) / 1.2) * 100.0;
 
-  summaryReport = String::format("{ \"Avg_TC1\": %d, \"Avg_TP1\": %d, \"Avg_TC2\": %d, \"Avg_TP2\": %d, \"Avg_FSR\": %d \
-                                  , \"Avg_AccX\": %d, \"Avg_AccY\": %d, \"Avg_AccZ\": %d, \"Avg_GyrX\": %d, \"Avg_GyrY\": %d \
-                                  , \"Avg_GyrZ\": %d, \"Avg_BrdTemp\": %d, \"Max_TC1\": %d, \"Max_TP1\": %d, \"Max_TC2\": %d \
-                                  , \"Max_TP2\": %d, \"Max_AccX\": %d, \"Max_AccY\": %d, \"Max_AccZ\": %d, \"Max_GyrX\": %d \
-                                  , \"Max_GyrY\": %d, \"Max_GyrZ\": %d, \"Max_BrdTemp\": %d, \"Pulse\": %d, \"HRV\": %d \
-                                  , \"Battery\": %f}", avg_tc1, avg_tp1, avg_tc2, avg_tp2, avg_fsr, avg_accx, avg_accy, avg_accz, \
-                                  avg_gyrx, avg_gyry, avg_gyrz, avg_brdtemp, max_tc1, max_tp1, max_tc2, max_tp2, max_fsr, \
-                                  max_accx, max_accy, max_accz, max_gyrx, max_gyry, max_gyrz, max_brdtemp, pulse, hrv, batt_perc);
+  summaryReport = String::format("{ \"AvgTC1\": %d, \"AvgTP1\": %d, \"AvgTC2\": %d, \"AvgTP2\": %d, \"AvgFSR\": %d \
+                                  , \"AvgAccX\": %d, \"AvgAccY\": %d, \"AvgAccZ\": %d, \"AvgGyrX\": %d, \"AvgGyrY\": %d \
+                                  , \"AvgGyrZ\": %d, \"AvgBT\": %d, \"MaxTC1\": %d, \"MaxTP1\": %d, \"MaxTC2\": %d \
+                                  , \"MaxTP2\": %d, \"MaxAccX\": %d, \"MaxAccY\": %d, \"MaxAccZ\": %d, \"MaxGyrX\": %d \
+                                  , \"MaxGyrY\": %d, \"MaxGyrZ\": %d, \"MaxBT\": %d, \"HR\": %d, \"HRV\": %f \
+                                  , \"Batt\": %f, \"MaxFSR\": %d}" \
+                                  , avg_tc1, avg_tp1, avg_tc2, avg_tp2, avg_fsr, avg_accx, avg_accy, avg_accz, \
+                                  avg_gyrx, avg_gyry, avg_gyrz, avg_brdtemp, max_tc1, max_tp1, max_tc2, max_tp2, \
+                                  max_accx, max_accy, max_accz, max_gyrx, max_gyry, max_gyrz, max_brdtemp, pulse, \
+                                  hrv, batt_perc, max_fsr);
+
+Serial.println(avg_tc1);
+Serial.println(avg_tp1);
+Serial.println(avg_tc2);
+Serial.println(avg_tp2);
+Serial.print("Avg_FSR: ");
+Serial.println(avg_fsr);
+Serial.println(avg_accx);
+Serial.println(avg_accy);
+Serial.println(avg_accz);
+Serial.println(avg_gyrx);
+Serial.println(avg_gyry);
+Serial.println(avg_gyrz);
+Serial.print("Avg_BrdTemp: ");
+Serial.println(avg_brdtemp);
+Serial.println(max_tc1);
+Serial.println(max_tp1);
+Serial.println(max_tc2);
+Serial.println(max_tp2);
+//Good up through the above
+Serial.print("Max_FSR: ");
+Serial.println(max_fsr);
+Serial.println(max_accx);
+Serial.println(max_accy);
+Serial.println(max_accz);
+Serial.print("Max_GyrX: ");
+Serial.println(max_gyrx);
+Serial.println(max_gyry);
+Serial.println(max_gyrz);
+Serial.println(max_brdtemp);
+Serial.print("Pulse: ");
+Serial.println(pulse);
+Serial.print("HRV: ");
+Serial.println(hrv);
+Serial.print("Batt: ");
+Serial.println(batt_perc);
+Serial.println(" ");
 
   baseReadCounter = 0;
   tp1ReadCounter = 0;
