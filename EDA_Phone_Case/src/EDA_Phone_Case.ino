@@ -7,6 +7,8 @@
 
 #define AD0_VAL 0  // The value of the last bit of the I2C address. 
 
+//test
+
 /*  PIN ASSIGNMENTS */
 #define slp 8
 #define eda1_out 5
