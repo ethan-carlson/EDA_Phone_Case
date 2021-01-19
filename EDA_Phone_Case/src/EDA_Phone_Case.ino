@@ -162,14 +162,14 @@ void loop() {
     switch (reportTurnCounter){
       case 1:
         if(Particle.connected()){
-          Particle.publish("EDA1", eda1Report);
+          Particle.publish("EDA1", eda1Report, PRIVATE);
         }
         eda1Report = "";
         reportTurnCounter = 2;
         break;
       case 2:
         if(Particle.connected()){
-          Particle.publish("EDA2", eda2Report);
+          Particle.publish("EDA2", eda2Report, PRIVATE);
         }
         eda2Report = "";
         reportTurnCounter = 3;
@@ -177,7 +177,7 @@ void loop() {
       case 3:
         computeSummaryReport();
         if(Particle.connected()){
-          Particle.publish("SummaryReport", summaryReport);
+          Particle.publish("SummaryReport", summaryReport, PRIVATE);
         }
         summaryReport = "";
         reportTurnCounter = 1;
@@ -259,11 +259,14 @@ void computeSummaryReport(){
   float voltage = analogRead(BATT) * 0.0011224;
   float batt_perc = ((voltage - 3.0) / 1.2) * 100.0;
 
-  summaryReport = summaryReport + "Avg TC1: " + avg_tc1 + ", Avg TP1: " + avg_tp1 + ", Avg TC2: " + avg_tc2 + ", Avg TP2: " + avg_tp2 + ", Avg FSR: " + avg_fsr;
-  summaryReport = summaryReport + "Avg AccX: " + avg_accx + ", Avg AccY: " + avg_accy + ", Avg AccZ: " + avg_accz + ", Avg GyrX: " + avg_gyrx + ", Avg GyrY: " + avg_gyry + ", Avg GyrZ: " + avg_gyrz + ", Avg BrdTemp: " + avg_brdtemp + " / ";
-  summaryReport = summaryReport + "Max TC1: " + max_tc1 + ", Max TC2: " + max_tp1 + ", Max TP1: " + max_tc2 + ", Max TP2: " + max_tp2 + ", Max FSR: " + max_fsr;
-  summaryReport = summaryReport + "Max AccX: " + max_accx + ", Max AccY: " + max_accy + ", Max AccZ: " + max_accz + ", Max GyrX: " + max_gyrx + ", Max GyrY: " + max_gyry + ", Max GyrZ: " + max_gyrz + ", Max BrdTemp: " + max_brdtemp + " / ";
-  summaryReport = summaryReport + "Pulse: " + pulse + ", HRV: " + hrv + ", Battery %: " + batt_perc;
+  summaryReport = String::format("{ \"Avg_TC1\": %d, \"Avg_TP1\": %d, \"Avg_TC2\": %d, \"Avg_TP2\": %d, \"Avg_FSR\": %d \
+                                  , \"Avg_AccX\": %d, \"Avg_AccY\": %d, \"Avg_AccZ\": %d, \"Avg_GyrX\": %d, \"Avg_GyrY\": %d \
+                                  , \"Avg_GyrZ\": %d, \"Avg_BrdTemp\": %d, \"Max_TC1\": %d, \"Max_TP1\": %d, \"Max_TC2\": %d \
+                                  , \"Max_TP2\": %d, \"Max_AccX\": %d, \"Max_AccY\": %d, \"Max_AccZ\": %d, \"Max_GyrX\": %d \
+                                  , \"Max_GyrY\": %d, \"Max_GyrZ\": %d, \"Max_BrdTemp\": %d, \"Pulse\": %d, \"HRV\": %d \
+                                  , \"Battery\": %f}", avg_tc1, avg_tp1, avg_tc2, avg_tp2, avg_fsr, avg_accx, avg_accy, avg_accz, \
+                                  avg_gyrx, avg_gyry, avg_gyrz, avg_brdtemp, max_tc1, max_tp1, max_tc2, max_tp2, max_fsr, \
+                                  max_accx, max_accy, max_accz, max_gyrx, max_gyry, max_gyrz, max_brdtemp, pulse, hrv, batt_perc);
 
   baseReadCounter = 0;
   tp1ReadCounter = 0;
