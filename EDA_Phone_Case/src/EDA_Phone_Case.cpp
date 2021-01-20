@@ -107,7 +107,7 @@ void loop() {
   if((edaTurnCounter == 1) && ((millis()-edaReadTimer) >= 15)){
     edaReadTimer = millis();
     eda1 = ads_eda.readADC_SingleEnded(0);
-    eda1Report = eda1Report + String(eda1) + ','; //EDA1
+    eda1Report = eda1Report + String(eda1) + ' '; //EDA1
     edaTurnCounter = 2;
   }
   
@@ -115,7 +115,7 @@ void loop() {
   else if((edaTurnCounter == 2) && ((millis()-edaReadTimer) >= 15)){
     edaReadTimer = millis();
     eda2 = ads_eda.readADC_SingleEnded(2);
-    eda2Report = eda2Report + String(eda2) + ','; //EDA2
+    eda2Report = eda2Report + String(eda2) + ' '; //EDA2
     edaTurnCounter = 1;
   }
 
@@ -178,16 +178,19 @@ void loop() {
     switch (reportTurnCounter){
       case 1:
         if(Particle.connected()){
+          eda1Report = eda1Report + "\"}";
           Particle.publish("EDA1", eda1Report, PRIVATE);
+          Serial.println(eda1Report);
         }
-        eda1Report = "";
+        eda1Report = "{ \"EDA1\": \"";
         reportTurnCounter = 2;
         break;
       case 2:
         if(Particle.connected()){
+          eda2Report = eda2Report + "\"}";
           Particle.publish("EDA2", eda2Report, PRIVATE);
         }
-        eda2Report = "";
+        eda2Report = "{ \"EDA2\": \"";
         reportTurnCounter = 3;
         break;
       case 3:
@@ -285,43 +288,6 @@ void computeSummaryReport(){
                                   avg_gyrx, avg_gyry, avg_gyrz, avg_brdtemp, max_tc1, max_tp1, max_tc2, max_tp2, \
                                   max_accx, max_accy, max_accz, max_gyrx, max_gyry, max_gyrz, max_brdtemp, pulse, \
                                   hrv, batt_perc, max_fsr);
-
-Serial.println(avg_tc1);
-Serial.println(avg_tp1);
-Serial.println(avg_tc2);
-Serial.println(avg_tp2);
-Serial.print("Avg_FSR: ");
-Serial.println(avg_fsr);
-Serial.println(avg_accx);
-Serial.println(avg_accy);
-Serial.println(avg_accz);
-Serial.println(avg_gyrx);
-Serial.println(avg_gyry);
-Serial.println(avg_gyrz);
-Serial.print("Avg_BrdTemp: ");
-Serial.println(avg_brdtemp);
-Serial.println(max_tc1);
-Serial.println(max_tp1);
-Serial.println(max_tc2);
-Serial.println(max_tp2);
-//Good up through the above
-Serial.print("Max_FSR: ");
-Serial.println(max_fsr);
-Serial.println(max_accx);
-Serial.println(max_accy);
-Serial.println(max_accz);
-Serial.print("Max_GyrX: ");
-Serial.println(max_gyrx);
-Serial.println(max_gyry);
-Serial.println(max_gyrz);
-Serial.println(max_brdtemp);
-Serial.print("Pulse: ");
-Serial.println(pulse);
-Serial.print("HRV: ");
-Serial.println(hrv);
-Serial.print("Batt: ");
-Serial.println(batt_perc);
-Serial.println(" ");
 
   baseReadCounter = 0;
   tp1ReadCounter = 0;
