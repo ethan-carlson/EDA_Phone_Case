@@ -63,8 +63,8 @@ Adafruit_ADS1115 ads_eda(0x49);
 void setup() {
 
   //For debugging, comment out when not used
-  Serial.begin(115200);
-  while(!Serial){}
+  //Serial.begin(115200);
+  //while(!Serial){}
 
   Wire.begin();
   Wire.setClock(400000);  //The IMU is capped at the 400khz level
@@ -98,19 +98,19 @@ void setup() {
 void loop() {
   // Variables handled locally: TC1, TP1, TC2, TP2, Blood, FSR, AccX, AccY, AccZ, GyrX, GyrY, GyrZ, BrdTemp
   // Variables pushed to the cloud raw: EDA1, EDA2
-  long loopTimer;
-  loopTimer = millis();
+  //long loopTimer;
+  //loopTimer = millis();
 
   /*  Cloud Variables */
   // 100 6-byte readings = 600 byte reports
-  // Report every three seconds --> readings every 30ms
-  if((edaTurnCounter == 1) && ((millis()-edaReadTimer) >= 15)){
+  // Report every two seconds --> readings every 20ms
+  if((edaTurnCounter == 1) && ((millis()-edaReadTimer) >= 20)){
     edaReadTimer = millis();
     eda1 = ads_eda.readADC_SingleEnded(0);
     eda1Report = eda1Report + String(eda1) + ' '; //EDA1
-    edaTurnCounter = 2;
+    edaTurnCounter = 1;
   }
-  
+  /*
   //  Can get 20ms resolution instead of 30ms by dropping the EDA2 circuit...evaluate its usefulness in Rev3
   else if((edaTurnCounter == 2) && ((millis()-edaReadTimer) >= 15)){
     edaReadTimer = millis();
@@ -118,7 +118,7 @@ void loop() {
     eda2Report = eda2Report + String(eda2) + ' '; //EDA2
     edaTurnCounter = 1;
   }
-
+*/
   /*  Locally Used Variables  */
   tc1 = analogRead(TC1);
   tc2 = analogRead(TC2);
@@ -180,11 +180,11 @@ void loop() {
         if(Particle.connected()){
           eda1Report = eda1Report + "\"}";
           Particle.publish("EDA1", eda1Report, PRIVATE);
-          Serial.println(eda1Report);
         }
         eda1Report = "{ \"EDA1\": \"";
-        reportTurnCounter = 2;
+        reportTurnCounter = 3;
         break;
+        /*
       case 2:
         if(Particle.connected()){
           eda2Report = eda2Report + "\"}";
@@ -193,6 +193,7 @@ void loop() {
         eda2Report = "{ \"EDA2\": \"";
         reportTurnCounter = 3;
         break;
+        */
       case 3:
         computeSummaryReport();
         if(Particle.connected()){
@@ -257,7 +258,7 @@ void calculateHRV(int IBI){
 
 
 void PulseSensorAmped_lost(void) {
-  Serial.println("Pulse Lost");
+  //Serial.println("Pulse Lost");
 }
 
 
@@ -276,17 +277,17 @@ void computeSummaryReport(){
   avg_fsr = avg_fsr / fsrReadCounter;
 
   float voltage = analogRead(BATT) * 0.0011224;
-  float batt_perc = ((voltage - 3.0) / 1.2) * 100.0;
+  float batt_perc = ((voltage - 3.0) / 1.125) * 100.0;
 
-  summaryReport = String::format("{ \"AvgTC1\": %d, \"AvgTP1\": %d, \"AvgTC2\": %d, \"AvgTP2\": %d, \"AvgFSR\": %d \
-                                  , \"AvgAccX\": %d, \"AvgAccY\": %d, \"AvgAccZ\": %d, \"AvgGyrX\": %d, \"AvgGyrY\": %d \
-                                  , \"AvgGyrZ\": %d, \"AvgBT\": %d, \"MaxTC1\": %d, \"MaxTP1\": %d, \"MaxTC2\": %d \
-                                  , \"MaxTP2\": %d, \"MaxAccX\": %d, \"MaxAccY\": %d, \"MaxAccZ\": %d, \"MaxGyrX\": %d \
-                                  , \"MaxGyrY\": %d, \"MaxGyrZ\": %d, \"MaxBT\": %d, \"HR\": %d, \"HRV\": %f \
-                                  , \"Batt\": %f, \"MaxFSR\": %d}" \
+  summaryReport = String::format("{ \"ATC1\": %d, \"ATP1\": %d, \"ATC2\": %d, \"ATP2\": %d, \"AFSR\": %d \
+                                  , \"AAccX\": %d, \"AAccY\": %d, \"AAccZ\": %d, \"AGyrX\": %d, \"AGyrY\": %d \
+                                  , \"AGyrZ\": %d, \"ABT\": %d, \"MTP1\": %d \
+                                  , \"MTP2\": %d, \"MAccX\": %d, \"MAccY\": %d, \"MAccZ\": %d, \"MGyrX\": %d \
+                                  , \"MGyrY\": %d, \"MGyrZ\": %d, \"HR\": %d, \"HRV\": %f \
+                                  , \"Batt\": %f, \"MFSR\": %d}" \
                                   , avg_tc1, avg_tp1, avg_tc2, avg_tp2, avg_fsr, avg_accx, avg_accy, avg_accz, \
-                                  avg_gyrx, avg_gyry, avg_gyrz, avg_brdtemp, max_tc1, max_tp1, max_tc2, max_tp2, \
-                                  max_accx, max_accy, max_accz, max_gyrx, max_gyry, max_gyrz, max_brdtemp, pulse, \
+                                  avg_gyrx, avg_gyry, avg_gyrz, avg_brdtemp, max_tp1, max_tp2, \
+                                  max_accx, max_accy, max_accz, max_gyrx, max_gyry, max_gyrz, pulse, \
                                   hrv, batt_perc, max_fsr);
 
   baseReadCounter = 0;
