@@ -206,7 +206,7 @@ int16_t Adafruit_ADS1015::readADC_Differential_0_1() {
       ADS1015_REG_CONFIG_CLAT_NONLAT |  // Non-latching (default val)
       ADS1015_REG_CONFIG_CPOL_ACTVLOW | // Alert/Rdy active low   (default val)
       ADS1015_REG_CONFIG_CMODE_TRAD |   // Traditional comparator (default val)
-      ADS1015_REG_CONFIG_DR_3300SPS |   // 1600 samples per second (default)
+      ADS1015_REG_CONFIG_DR_920SPS |   // 1600 samples per second (default)
       ADS1015_REG_CONFIG_MODE_SINGLE;   // Single-shot mode (default)
 
   // Set PGA/voltage range

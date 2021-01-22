@@ -48,7 +48,7 @@ Adafruit_ADS1115 ads_eda(0x49);
 void setup() {
 
   //For debugging, comment out when not used
-  //Serial.begin(115200);
+  Serial.begin(115200);
   //while(!Serial){}
 
   Wire.begin();
@@ -91,7 +91,7 @@ void loop() {
   // Report every two seconds --> readings every 20ms
   if((edaTurnCounter == 1) && ((millis()-edaReadTimer) >= 20)){
     edaReadTimer = millis();
-    eda1 = ads_eda.readADC_SingleEnded(0);
+    eda1 = ads_eda.readADC_Differential_0_1();
     eda1Report = eda1Report + String(eda1) + ' '; //EDA1
     edaTurnCounter = 1;
   }
