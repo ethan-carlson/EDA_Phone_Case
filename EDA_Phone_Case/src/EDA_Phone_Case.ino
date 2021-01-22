@@ -275,6 +275,16 @@ void computeSummaryReport(){
                                   max_accx, max_accy, max_accz, max_gyrx, max_gyry, max_gyrz, pulse, \
                                   hrv, batt_perc, max_fsr);
 
+  max_tp1 = 0;
+  max_tp2 = 0;
+  max_accx = 0;
+  max_accy = 0;
+  max_accz = 0;
+  max_gyrx = 0;
+  max_gyry = 0;
+  max_gyrz = 0;
+  max_fsr = 0;
+
   baseReadCounter = 0;
   tp1ReadCounter = 0;
   tp2ReadCounter = 0;
