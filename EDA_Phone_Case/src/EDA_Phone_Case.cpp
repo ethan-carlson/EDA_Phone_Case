@@ -31,7 +31,7 @@ void initializeIMU();
 #define TC2 A2
 #define PULSE_SIGNAL_PIN A4
 
-#define IBI_BUFFER_SIZE 5  //HRV will be defined as the standard deviation in IBI over the last 5 beats ***IMPORTANT
+#define IBI_BUFFER_SIZE 8  //HRV will be defined as the standard deviation in IBI over the last 8 beats ***IMPORTANT
 
 // Relevant signals on Rev 2 PCB: 15
 // TC1, TP1, TC2, TP2, EDA1, EDA2, Pulse, FSR, AccX, AccY, AccZ, GyrX, GyrY, GyrZ, BrdTemp
@@ -98,8 +98,8 @@ void setup() {
 void loop() {
   // Variables handled locally: TC1, TP1, TC2, TP2, Blood, FSR, AccX, AccY, AccZ, GyrX, GyrY, GyrZ, BrdTemp
   // Variables pushed to the cloud raw: EDA1, EDA2
-  //long loopTimer;
-  //loopTimer = millis();
+  long loopTimer;
+  loopTimer = millis();
 
   /*  Cloud Variables */
   // 100 6-byte readings = 600 byte reports
@@ -123,20 +123,19 @@ void loop() {
   tc1 = analogRead(TC1);
   tc2 = analogRead(TC2);
   ICM.getAGMT();  // Update IMU Values
-  accx = ICM.agmt.acc.axes.x;
-  accy = ICM.agmt.acc.axes.y;
-  accz = ICM.agmt.acc.axes.z;
-  gyrx = ICM.agmt.gyr.axes.x;
-  gyry = ICM.agmt.gyr.axes.y;
-  gyrz = ICM.agmt.gyr.axes.z;
-  brdtemp = ICM.agmt.tmp.val;
+  accx = ICM.accX()*100;
+  accy = ICM.accY()*100;
+  accz = ICM.accZ()*100;
+  gyrx = ICM.gyrX()*100;
+  gyry = ICM.gyrY()*100;
+  gyrz = ICM.gyrZ()*100;
+  brdtemp = ICM.temp()*100;
 
   int summaryArray[9] = {tc1, tc2, accx, accy, accz, gyrx, gyry, gyrz, brdtemp};
   baseReadCounter++;
   updateSummaryVals(summaryArray);
 
   PulseSensorAmped.process();
-
 
   //The ADS1115 can read at 860 SPS, roughly every 1160 us
   if((micros() - otherReadTimer) > 1500){  //This is probably superfluous given our current loop time of ~5-10 ms
@@ -222,8 +221,8 @@ void loop() {
   // Serial.print("HRV: ");
   // Serial.println(hrv);
 
-  // Serial.print("Loop Time: ");
-  // Serial.println((millis() - loopTimer));
+   Serial.print("Loop Time: ");
+   Serial.println((millis() - loopTimer));
 }
 
 
