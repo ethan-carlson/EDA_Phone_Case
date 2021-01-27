@@ -4,5 +4,8 @@
     "cortex-debug.openocdPath": "${command:particle.getDebuggerOpenocdPath}",
     "files.associations": {
         "*.ino": "cpp"
-    }
+    },
+    "particle.targetDevice": "e00fce684de8463bfbdba713",
+    "particle.firmwareVersion": "2.0.1",
+    "particle.targetPlatform": "argon"
 }
