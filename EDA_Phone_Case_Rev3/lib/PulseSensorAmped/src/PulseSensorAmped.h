@@ -35,6 +35,8 @@ extern void PulseSensorAmped_data(int BPM, int IBI) __attribute__((weak));
 // The "signal lost" callback; Called when no more valid pulse data is avaialble.
 extern void PulseSensorAmped_lost(void) __attribute__((weak));
 
+extern void calculateHRV(int IBI) __attribute__((weak));
+
 class PulseSensorAmpedClass
 {
 public:

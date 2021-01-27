@@ -155,6 +155,7 @@ void PulseSensorAmpedClass::update() {              // Update this ever 2ms
       pulse = true;
 
       IBI = sampleCounter - lastBeatTime;         // measure time between beats in mS (Starting from point the threshold is exceeded)
+      calculateHRV(IBI);
       lastBeatTime = sampleCounter;               // keep track of the start time of this beat
 
       // Add the count to the buffer
