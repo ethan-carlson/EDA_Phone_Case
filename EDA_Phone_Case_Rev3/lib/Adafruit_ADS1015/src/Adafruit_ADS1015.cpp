@@ -306,11 +306,11 @@ void Adafruit_ADS1015::startComparator_SingleEnded(uint8_t channel,
   uint16_t config =
       ADS1015_REG_CONFIG_CQUE_1CONV |   // Comparator enabled and asserts on 1
                                         // match
-      ADS1015_REG_CONFIG_CLAT_LATCH |   // Latching mode
+      ADS1015_REG_CONFIG_CLAT_NONLAT |   // Latching mode
       ADS1015_REG_CONFIG_CPOL_ACTVLOW | // Alert/Rdy active low   (default val)
       ADS1015_REG_CONFIG_CMODE_TRAD |   // Traditional comparator (default val)
-      ADS1015_REG_CONFIG_DR_3300SPS |   // 1600 samples per second (default)
-      ADS1015_REG_CONFIG_MODE_CONTIN |  // Continuous conversion mode
+      ADS1015_REG_CONFIG_DR_128SPS |   // 1600 samples per second (default)
+      //ADS1015_REG_CONFIG_MODE_CONTIN |  // Continuous conversion mode
       ADS1015_REG_CONFIG_MODE_CONTIN;   // Continuous conversion mode
 
   // Set PGA/voltage range
@@ -319,7 +319,7 @@ void Adafruit_ADS1015::startComparator_SingleEnded(uint8_t channel,
   // Set single-ended input channel
   switch (channel) {
   case (0):
-    config |= ADS1015_REG_CONFIG_MUX_SINGLE_0;
+    config |= ADS1015_REG_CONFIG_MUX_DIFF_0_1;
     break;
   case (1):
     config |= ADS1015_REG_CONFIG_MUX_SINGLE_1;

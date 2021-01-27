@@ -36,7 +36,7 @@ int max_tc1, max_tc2, max_tp1, max_tp2, max_fsr, max_accx, max_accy, max_accz, m
 int pulse;
 float hrv;
 unsigned int ibi_buffer[IBI_BUFFER_SIZE];
-unsigned long loopTimer, edaReadTimer, reportTimer, otherReadTimer, sleepTimer;
+unsigned long long loopTimer, edaReadTimer, reportTimer, otherReadTimer, sleepTimer;
 String eda1Report = "";
 String eda2Report = "";
 String summaryReport = "";
@@ -72,7 +72,7 @@ void setup() {
   digitalWrite(eda2_out,HIGH);
 
   digitalWrite(slp, HIGH);  //Start with board awake
-  delay(500);
+  delay(100);
   
   initializeIMU();
 
@@ -85,12 +85,12 @@ void setup() {
   PulseSensorAmped.attach(PULSE_SIGNAL_PIN);
   PulseSensorAmped.start();  //Start reading heart beats
 
-  delay(500);
+  delay(100);
 
-  reportTimer = millis();  //Timer to avoid sending reports more than once per second (Particle cap)
-  edaReadTimer = millis();  //Timer to rate limit EDA readings to the Particle publishing size cap (622 bytes)
+  reportTimer = System.millis();  //Timer to avoid sending reports more than once per second (Particle cap)
+  edaReadTimer = System.millis();  //Timer to rate limit EDA readings to the Particle publishing size cap (622 bytes)
   otherReadTimer = micros();  //Timer to rate limit the other ADS signals to the max rate of the ADS1115
-  sleepTimer = millis();  //Timer to figure out when the device isn't being used and go to sleep
+  sleepTimer = System.millis();  //Timer to figure out when the device isn't being used and go to sleep
 }
 
 void loop() {
@@ -98,30 +98,30 @@ void loop() {
   // Variables pushed to the cloud raw: EDA1, EDA2
 
   //long loopTimer;
-  //loopTimer = millis();
+  //loopTimer = System.millis();
 
-  if ((millis() - sleepTimer) > 10000){  //Go to sleep after 10s of non-use
+  if ((System.millis() - sleepTimer) > 10000){  //Go to sleep after 10s of non-use
     gotoSleep();
   }
 
   /*  Cloud Variables */
   // 100 6-byte readings = 600 byte reports
   // Report every two seconds --> readings every 20ms
-  if((edaTurnCounter == 1) && ((millis()-edaReadTimer) >= 20)){
-    edaReadTimer = millis();
+  if((edaTurnCounter == 1) && ((System.millis()-edaReadTimer) >= 20)){
+    edaReadTimer = System.millis();
     eda1 = ads_eda.readADC_Differential_0_1();
     eda1Report = eda1Report + String(eda1) + ' '; //EDA1
 
     if(eda1 > 100){  //If the device is being held, reset the sleep timer
-      sleepTimer = millis();
+      sleepTimer = System.millis();
     }
 
     //edaTurnCounter = 1;
   }
   /*
   //  Can get 20ms resolution instead of 30ms by dropping the EDA2 circuit...evaluate its usefulness in Rev3
-  else if((edaTurnCounter == 2) && ((millis()-edaReadTimer) >= 15)){
-    edaReadTimer = millis();
+  else if((edaTurnCounter == 2) && ((System.millis()-edaReadTimer) >= 15)){
+    edaReadTimer = System.millis();
     eda2 = ads_eda.readADC_SingleEnded(2);
     eda2Report = eda2Report + String(eda2) + ' '; //EDA2
     edaTurnCounter = 1;
@@ -181,8 +181,8 @@ void loop() {
   }
 
   //Publish a report every second -- Rate capped by Particle
-  if((millis() - reportTimer) >= 1001){
-    reportTimer = millis();
+  if((System.millis() - reportTimer) >= 1001){
+    reportTimer = System.millis();
     switch (reportTurnCounter){
       case 1:
         if(Particle.connected()){
@@ -230,8 +230,13 @@ void loop() {
   // Serial.print("HRV: ");
   // Serial.println(hrv);
 
+  //Deal with micros() rollover every 70min
+  if ((micros() - otherReadTimer) < 0){
+    otherReadTimer = micros();
+  }
+
    //Serial.print("Loop Time: ");
-   //Serial.println((millis() - loopTimer));
+   //Serial.println((System.millis() - loopTimer));
 }
 
 
@@ -388,26 +393,28 @@ void gotoSleep(){
         .gpio(alert, FALLING)
         .duration(10min);  //Wake up every 1 sec to check
 
-  ads_eda.startComparator_SingleEnded(1,100);  //Set up the alert pin to notify when the device is being used
+  PulseSensorAmped.stop();  //Stop reading heart beats 
+  digitalWrite(slp, LOW);  //Turn most of the board off
+  digitalWrite(led_on, LOW);  //Turn the pulse sensor off
+  ads_eda.startComparator_SingleEnded(0,100);  //Set up the alert pin to notify when the device is being used
 
   while(sleeping){
-    PulseSensorAmped.stop();  //Stop reading heart beats 
-    digitalWrite(slp, LOW);  //Turn most of the board off
-    digitalWrite(led_on, LOW);  //Turn the pulse sensor off
+    bool alert_flag;
     
     System.sleep(config);  //Put the Argon to sleep
 
     //On wakeup, continue here:
-    if((millis() - reportTimer) >= 1001){  //If it's safe to do so, shoot off a battery report
-      reportTimer = millis();
+    if((System.millis() - reportTimer) >= 1001){  //If it's safe to do so, shoot off a battery report
+      reportTimer = System.millis();
       computeSummaryReport();
       if(Particle.connected()){
         Particle.publish("SummaryReport", summaryReport, PRIVATE);
       }
       summaryReport = "";
     }
-
-    if (ads_eda.readADC_Differential_0_1() > 100){  //Check to see if we're actually awake
+    
+    alert_flag = digitalRead(alert);  //Check to see if we're  awake
+    if (!alert_flag){  
       sleeping = false;  //If so leave the loop
     }
   }
@@ -415,14 +422,14 @@ void gotoSleep(){
   if(!sleeping){
     digitalWrite(slp, HIGH);  //Turn the board back on
     digitalWrite(led_on, HIGH);  //Turn the pulse sensor back on
-    delay(500);  //Let it wake up
+    delay(100);  //Let it wake up
     initializeIMU();
     ads_other.begin();
     ads_eda.begin();
     PulseSensorAmped.start();  //Start reading heart beats
 
-    sleepTimer = millis();  //Reset sleep timers
+    sleepTimer = System.millis();  //Reset sleep timer
 
-    return; //head back to the main loop
+    return; //head back to main
   }
 }
