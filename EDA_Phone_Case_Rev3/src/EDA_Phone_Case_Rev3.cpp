@@ -71,7 +71,7 @@ void setup() {
   Wire.begin();
   Wire.setClock(400000);  //The IMU is capped at the 400khz level
   
-  pinMode(TC1,INPUT);  //Local temp compensation PTC thermistors from the thermopile assemblies
+  pinMode(TC1,INPUT);  //Local temp compensation NTC thermistors from the thermopile assemblies
   pinMode(TC2,INPUT);
   pinMode(alert, INPUT);  //Device turns off when there's no EDA activity
   pinMode(MIC, INPUT);  //Measure ambient noise level
@@ -92,8 +92,8 @@ void setup() {
   
   initializeIMU();
 
-  ads_other.setGain(GAIN_TWOTHIRDS);  //Should be able to put this to one eventually
-  ads_eda.setGain(GAIN_ONE);  //No higher than one since the max output of the op amp is the same as Vdd on the ADS1115
+  ads_other.setGain(GAIN_TWOTHIRDS);  
+  ads_eda.setGain(GAIN_ONE);  
   ads_other.begin();
   ads_eda.begin();
 
@@ -116,7 +116,7 @@ void loop() {
   //long loopTimer;
   //loopTimer = System.millis();
 
-  if ((System.millis() - sleepTimer) > 10000){  //Go to sleep after 10s of non-use
+  if ((System.millis() - sleepTimer) > 15000){  //Go to sleep after 10s of non-use
     gotoSleep();
   }
 
@@ -162,8 +162,8 @@ void loop() {
 
   PulseSensorAmped.process();
 
-  //The ADS1115 can read at 860 SPS, roughly every 1160 us
-  if((micros() - otherReadTimer) > 1500){  //This is probably superfluous given our current loop time of ~5-10 ms
+  //ADS1115 currently set for 250 SPS = 4ms min read time
+  if((micros() - otherReadTimer) > 4100){  //This is probably superfluous given our current loop time of ~5-10 ms
     otherReadTimer = micros();
     switch (readTurnCounter){ //Take turns reading from each line
       case 1:
@@ -173,7 +173,7 @@ void loop() {
           max_tp1 = tp1;
         }
         tp1ReadCounter++;
-        readTurnCounter = 2;
+        readTurnCounter = 3;
         break;
       case 2:
         tp2 = ads_other.readADC_SingleEnded(1);  //Thermopile #2
@@ -234,10 +234,12 @@ void loop() {
   // Serial.print("EDA2: ");
   // Serial.println(eda2);
   // Serial.print("TP1: ");
-  // Serial.println(tp1);
+  // Serial.print(tp1);
+  // Serial.print(", TC1: ");
+  // Serial.print(tc1);
   // Serial.print("TP2: ");
   // Serial.println(tp2);
-  // Serial.print("FSR: ");
+  // Serial.print(", FSR: ");
   // Serial.println(fsr);
   // Serial.print("AccZ: ");
   // // Serial.println(accz);
@@ -283,8 +285,6 @@ void calculateHRV(int IBI){
   ibi_stdev = pow(ibi_stdev, 0.5);
 
   hrv = ibi_stdev;
-
-  Serial.println(hrv);
 }
 
 
