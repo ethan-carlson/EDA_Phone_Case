@@ -1,4 +1,4 @@
-
+//  Code Version 1.2 by Joel Murphy & Yury Gitman  Spring 2013
 
 volatile int rate[10];                    // array to hold last ten IBI values
 volatile unsigned long sampleCounter = 0; // used to determine pulse timing

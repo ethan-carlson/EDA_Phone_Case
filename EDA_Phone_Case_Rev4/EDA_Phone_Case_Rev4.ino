@@ -102,12 +102,6 @@ void setup() {
   Serial.println("");
   Serial.print("Connected to WiFi network with IP Address: ");
   Serial.println(WiFi.localIP());
-
-//  initializeIMU();
-  ICM.begin( Wire, AD0_VAL );
-
-  ads_eda.setGain(GAIN_ONE);  
-  ads_eda.begin();
   
   xTaskCreatePinnedToCore(
                     core0Tasks,   /* Task function. */

@@ -1,4 +1,10 @@
 void core0Tasks(void * parameter){
+
+  //  initializeIMU();
+  ICM.begin( Wire, AD0_VAL );
+
+  ads_eda.setGain(GAIN_ONE);  
+  ads_eda.begin();
   
   for(;;){  //Run continuously
   //  long loopTimer;
@@ -13,6 +19,7 @@ void core0Tasks(void * parameter){
       int timediff = millis()-edaReadTimer;
       edaReadTimer = millis();
       eda = ads_eda.readADC_Differential_0_1();
+      Serial.println(eda);
       char edaRead[10] = {0};
       sprintf(edaRead,"%d ", eda);
       strcat(edaReport, edaRead);
