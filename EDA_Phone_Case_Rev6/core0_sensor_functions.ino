@@ -14,8 +14,8 @@ void core0Tasks(void * parameter){
   //  long loopTimer;
   //  loopTimer = millis();
 
-    /*  Go to sleep after 20s of non-use  */
-    if ((millis() - sleepTimer) > 20000){
+    /*  Go to sleep after 15s of non-use  */
+    if ((millis() - sleepTimer) > 15000){
       pulseInterruptEnd();                 //Stop looking for heart beats
       EDAInterruptEnd();                   //Stop the EDA read ISR
       WiFi.disconnect();                   //Shut down WiFi gracefully
@@ -28,12 +28,25 @@ void core0Tasks(void * parameter){
     accx = ICM.accX()*100;
     accy = ICM.accY()*100;
     accz = ICM.accZ()*100;
-    mag_acc = sqrt((pow(accx, 2) + pow(accx, 2) + pow(accx, 2)));
+    mag_acc = sqrt((pow(accx, 2) + pow(accy, 2) + pow(accz, 2)));
     gyrx = ICM.gyrX()*100;
     gyry = ICM.gyrY()*100;
     gyrz = ICM.gyrZ()*100;
-    mag_gyr = sqrt((pow(gyrx, 2) + pow(gyrx, 2) + pow(gyrx, 2)));
+    mag_gyr = sqrt((pow(gyrx, 2) + pow(gyry, 2) + pow(gyrz, 2)));
     brdtemp = ICM.temp()*100;
+
+    if (mag_acc > 150000){      // If we sense a tap
+      if (!firstTap){           // If it's our first tap, start the clock
+        firstTap = true;        // Set the first tap flag
+        tapTimer = millis();    // Start the lockout timer
+      }
+      else if ((millis() - tapTimer) > 200){  // If it's our second tap and the lockout has passed
+        secondTap = true;       // Trigger a double tap
+      }
+    }
+    if ((!secondTap) && ((millis() - tapTimer) > 1000)){    // If a second passes with no second tap
+      firstTap = false;         // Reset the first tap flag
+    }
 
     skintemp = analogRead(ST);
     mic = analogRead(MIC);
@@ -43,12 +56,14 @@ void core0Tasks(void * parameter){
     baseReadCounter++;
     updateSummaryVals(summaryArray);
 
-    if ((millis() - start_time) > 10000){
-      if ((Pulse) && ((millis() - haptic_pulse_to) > 300)){
-        haptic_pulse_to = millis();
-        drv.setWaveform(0, 11);  // play effect 
-        drv.setWaveform(1, 0);       // end waveform
-        drv.go();  // play the effect!
+    if (biofeedback){                 // If the biofeedback flag is enabled, playback heart beats on ERM
+      if ((millis() - start_time) > 15000){
+        if ((Pulse) && ((millis() - haptic_pulse_to) > 400)){
+          haptic_pulse_to = millis();
+          drv.setWaveform(0, 11);     // choose effect 
+          drv.setWaveform(1, 0);      // end waveform
+          drv.go();                   // play the effect!
+        }
       }
     }
 

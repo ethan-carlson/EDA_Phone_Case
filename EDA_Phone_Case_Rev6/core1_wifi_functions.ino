@@ -1,7 +1,14 @@
 
 void edaHTTP(){
-
-  strcat(edaReport, timestring);  //combine the EDA and timestamp data to prep for the request buffer
+  
+  memset(edaRequest, 0, sizeof(edaRequest));  // Clear out the request buffer
+  sprintf(edaRequest, edaReport);             // Fill the buffer with the EDA data
+  strcat(edaRequest, timestring);             // Add the timestamp data
+  
+  memset(edaReport, 0, sizeof(edaReport));    // Clear out the other buffers so they can continue to be used
+  sprintf(edaReport, "EDAstring=");
+  memset(timestring, 0, sizeof(timestring));
+  sprintf(timestring, "&timestring=");
 
   if(WiFi.status()== WL_CONNECTED){
     //Serial.println("Sending EDA Request");
@@ -9,7 +16,7 @@ void edaHTTP(){
     http.begin(edaServer);
 
     http.addHeader("Content-Type", "application/x-www-form-urlencoded");  // Specify content-type header
-    String httpRequestData = String(edaReport);  // Data to send with HTTP POST
+    String httpRequestData = String(edaRequest);  // Data to send with HTTP POST
     int httpResponseCode = http.POST(httpRequestData);  // Send HTTP POST request
       
     http.end(); // Free resources
@@ -35,12 +42,12 @@ void SummaryHTTP(){
   memset(summaryReport, 0, sizeof(summaryReport));
   sprintf(summaryReport, "AvgST=%d&AvgFSR=%d&AvgAcc=%d&AvgGyr=%d&AvgBT=%d&"
                           "MaxAcc=%d&MaxGyr=%d&HR=%d&HRV=%.1f&"
-                          "Batt=%.1f&MaxFSR=%d&MicRng=%d",
+                          "Batt=%.1f&MaxFSR=%d&MicRng=%d&Tap=%d",
                           avg_st, avg_fsr, avg_acc, avg_gyr, avg_brdtemp,
                           max_acc, max_gyr, BPM, hrv,
-                          batt_perc, max_fsr, mic_rng);
+                          batt_perc, max_fsr, mic_rng, secondTap);
 
-  Serial.println(summaryReport);
+  //Serial.println(summaryReport);
 
   max_st = 0;
   max_acc = 0;
@@ -49,6 +56,10 @@ void SummaryHTTP(){
   max_mic = 0;
   min_mic = 4096;
   baseReadCounter = 1;
+  if (secondTap){
+    firstTap = false;
+    secondTap = false;
+  }
 
   if(WiFi.status()== WL_CONNECTED){
     //Serial.println("Sending Summary Request");

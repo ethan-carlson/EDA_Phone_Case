@@ -4,6 +4,8 @@
 #include <HTTPClient.h>
 #include "Adafruit_DRV2605.h"
 
+bool biofeedback = false;  // Set true to engage haptic heart rate biofeedback
+
 TaskHandle_t Core0;  //Set up the handle for sensor tasks which will run on Core 0
 
 /*  WiFi and Server Reporting Info  */
@@ -33,11 +35,13 @@ int baseReadCounter = 1;
 int avg_st, avg_fsr, avg_acc, avg_gyr, avg_brdtemp, min_mic; //Summary report values (avg)
 int max_st, max_fsr, max_acc, max_gyr, max_mic; //Summary report values (max)
 float mag_acc, mag_gyr;
-long loopTimer, edaReadTimer, reportTimer, sleepTimer, haptic_pulse_to, start_time;
-char edaReport[5000] = {0};
+long loopTimer, edaReadTimer, reportTimer, sleepTimer, haptic_pulse_to, start_time, tapTimer;
+char edaRequest[5000] = {0};
+char edaReport[2500] = {0};
 char timestring[2500] = {0};
 char summaryReport[500] = {0};
-
+bool firstTap = false;
+bool secondTap = false;
 int skintemp, fsr, accx, accy, accz, gyrx, gyry, gyrz, brdtemp, eda, mic;
 
 ICM_20948_I2C ICM;
@@ -119,16 +123,12 @@ void setup() {
 /*-----------------------------------------------------------------------------------------------*/
 
 void loop() {
-  //Publish a report every second
+  //Publish a report every two seconds
   if((millis() - reportTimer) >= 2000){
     reportTimer = millis();
     switch (reportTurnCounter){
       case 1:
         edaHTTP();
-        memset(edaReport, 0, sizeof(edaReport));
-        sprintf(edaReport, "EDAstring=");
-        memset(timestring, 0, sizeof(timestring));
-        sprintf(timestring, "&timestring=");
         reportTurnCounter = 2;
         break;
       case 2:

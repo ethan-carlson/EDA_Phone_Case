@@ -3,7 +3,7 @@
 volatile int rate[10];                    // array to hold last ten IBI values
 volatile unsigned long sampleCounter = 0; // used to determine pulse timing
 volatile unsigned long lastBeatTime = 0;  // used to find IBI
-volatile int P =512;                      // used to find peak in pulse wave, seeded
+volatile int P = 512;                     // used to find peak in pulse wave, seeded
 volatile int T = 512;                     // used to find trough in pulse wave, seeded
 volatile int thresh = 512;                // used to find instant moment of heart beat, seeded
 volatile int amp = 100;                   // used to hold amplitude of pulse waveform, seeded
@@ -34,7 +34,6 @@ void pulseInterruptEnd(){
 } 
 
 
-// THIS IS THE HW-TIMER INTERRUPT SERVICE ROUTINE. 
 // Timer makes sure that we take a reading every 2 miliseconds
 void ISRTr(){                                 // triggered when timer fires....
   Signal = analogRead(PULSE);                 // read the Pulse Sensor on pin 34 3.3v sensor power......default ADC setup........
@@ -55,7 +54,7 @@ void ISRTr(){                                 // triggered when timer fires....
 
   //  NOW IT'S TIME TO LOOK FOR THE HEART BEAT
   // signal surges up in value every time there is a pulse
-  if (N > 250){                                   // avoid high frequency noise
+  if (N > 350){                                   // avoid high frequency noise
     if ( (Signal > thresh) && (Pulse == false) && (N > (IBI/5)*3) ){        
       Pulse = true;                               // set the Pulse flag when we think there is a pulse
       IBI = sampleCounter - lastBeatTime;         // measure time between beats in mS

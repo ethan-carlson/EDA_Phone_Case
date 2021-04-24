@@ -34,7 +34,8 @@ int avg_st, avg_fsr, avg_acc, avg_gyr, avg_brdtemp, min_mic; //Summary report va
 int max_st, max_fsr, max_acc, max_gyr, max_mic; //Summary report values (max)
 float mag_acc, mag_gyr;
 long loopTimer, edaReadTimer, reportTimer, sleepTimer, haptic_pulse_to, start_time;
-char edaReport[5000] = {0};
+char edaRequest[2500] = {0};
+char edaReport[2500] = {0};
 char timestring[2500] = {0};
 char summaryReport[500] = {0};
 
