@@ -14,8 +14,8 @@ void core0Tasks(void * parameter){
   //  long loopTimer;
   //  loopTimer = millis();
 
-    /*  Go to sleep after 15s of non-use  */
-    if ((millis() - sleepTimer) > 15000){
+    /*  Go to sleep after 20s of non-use  */
+    if ((millis() - sleepTimer) > 20000){
       pulseInterruptEnd();                 //Stop looking for heart beats
       EDAInterruptEnd();                   //Stop the EDA read ISR
       WiFi.disconnect();                   //Shut down WiFi gracefully

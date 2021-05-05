@@ -13,6 +13,7 @@ const char* ssid = "WSMCP?";
 const char* password = "phoebecat";
 const char* edaServer = "https://www.ethan-carlson.com/eda_update.php";
 const char* summaryServer = "https://www.ethan-carlson.com/phone_case_update.php";
+const char* reportServer = "https://www.ethan-carlson.com/rtux_update.php";
 
 #define AD0_VAL 0  // The value of the last bit of the IMU I2C address. 
 
@@ -30,13 +31,12 @@ const char* summaryServer = "https://www.ethan-carlson.com/phone_case_update.php
 
 /*  Relevant signals on Rev 6 PCB: 12  */
 // SkinTemp, EDA, HR, HRV, AvgFSR, MaxFSR, AvgAcc, AvgGyr, MaxAcc, MaxGyr, BrdTemp, MicRng
-uint8_t reportTurnCounter = 1;
 int baseReadCounter = 1;
 int avg_st, avg_fsr, avg_acc, avg_gyr, avg_brdtemp, min_mic; //Summary report values (avg)
 int max_st, max_fsr, max_acc, max_gyr, max_mic; //Summary report values (max)
 float mag_acc, mag_gyr;
 long loopTimer, edaReadTimer, reportTimer, sleepTimer, haptic_pulse_to, start_time, tapTimer;
-char edaRequest[5000] = {0};
+char httpRequest[5000] = {0};
 char edaReport[2500] = {0};
 char timestring[2500] = {0};
 char summaryReport[500] = {0};
@@ -126,16 +126,7 @@ void loop() {
   //Publish a report every two seconds
   if((millis() - reportTimer) >= 2000){
     reportTimer = millis();
-    switch (reportTurnCounter){
-      case 1:
-        edaHTTP();
-        reportTurnCounter = 2;
-        break;
-      case 2:
-        SummaryHTTP();
-        reportTurnCounter = 1;
-        break;
-    }
+    submitReport();
   }
 }
 

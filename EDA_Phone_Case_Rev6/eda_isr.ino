@@ -27,7 +27,7 @@ void ISReda(){                                // triggered when timer fires....
     sprintf(timeRead,"%d ", timediff);
     strcat(timestring, timeRead);
     
-    if(eda > 5 && prev_eda > 5){  //If the device is being held, reset the sleep timer
+    if(eda > 1){  //If the device is being held, reset the sleep timer
       sleepTimer = millis();
     }
 }// end isr
